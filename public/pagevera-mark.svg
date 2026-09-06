@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Pagevera mark">
+  <defs>
+    <linearGradient id="paper" x1="12" y1="8" x2="52" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F3D995"/>
+      <stop offset="1" stop-color="#B88C43"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="17" fill="#24221D"/>
+  <path d="M17 14.5h23.5c3.6 0 6.5 2.9 6.5 6.5v29.5c0 1.7-1.8 2.8-3.3 1.9l-9.5-5.5-9.5 5.5c-1.5.9-3.3-.2-3.3-1.9V21c0-2.8-1.8-5-4.4-5.9Z" fill="url(#paper)"/>
+  <path d="M40.5 15v11.2c0 1.6 1.7 2.6 3.1 1.7l7-4.2" fill="none" stroke="#FFF4D2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M26 27h13M26 34h13M26 41h8" stroke="#4D3920" stroke-width="3" stroke-linecap="round" opacity=".75"/>
+</svg>
