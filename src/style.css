@@ -125,3 +125,48 @@ body.light{background:#eeeae1;color:#28251f}.light .shell{background:radial-grad
   .controls{min-height:52px;padding-top:4px;padding-bottom:calc(4px + env(safe-area-inset-bottom))}
   .control-btn{min-height:34px}
 }
+
+/* Mobile navigation: keep menu in the top bar and turn the document sidebar into a true drawer. */
+.top-mobile-menu{display:none;background:transparent;font-size:20px;padding:4px;line-height:1;border:0;color:#d8d3c8;flex:0 0 auto}
+.sidebar-backdrop{display:none}
+@media(max-width:900px){
+  .topbar{position:relative}
+  .top-mobile-menu{display:block}
+  .brand{flex:1;min-width:0}
+  .viewer-topline .mobile-menu{display:none}
+  .sidebar{z-index:15;left:-105vw;top:0;bottom:0;width:min(320px,88vw);padding:76px 16px 24px;border-right:1px solid rgba(255,255,255,.13);transition:left .24s cubic-bezier(.22,.61,.36,1)}
+  .sidebar.open{left:0}
+  .sidebar-backdrop{display:block;position:fixed;inset:0;z-index:14;background:rgba(0,0,0,.52);opacity:0;pointer-events:none;transition:opacity .2s}
+  .sidebar-backdrop.open{opacity:1;pointer-events:auto}
+  .sidebar .close-sidebar{position:absolute;top:18px;right:15px;display:grid;place-items:center;width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.08)}
+  .sidebar-head{margin-top:0}
+}
+@media(max-width:600px){
+  .topbar{height:58px;flex-basis:58px;padding:0 10px}
+  .top-mobile-menu{width:34px;height:34px}
+  .brand{justify-content:center}
+  .top-actions{flex:0 0 auto}
+  .sidebar{top:0;padding-top:72px}
+  .viewer-area{width:100%;min-width:0}
+  .viewer-topline{padding-left:10px;padding-right:10px}
+}
+@media(max-width:400px){
+  .topbar{padding:0 7px}
+  .top-mobile-menu{width:31px}
+  .brand-copy strong{font-size:15px}
+  .icon-btn{width:34px;height:34px}
+}
+
+@media(max-width:600px){
+  .topbar{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;justify-content:initial}
+  .top-mobile-menu{grid-column:1;grid-row:1;justify-self:start}
+  .brand{grid-column:2;grid-row:1;justify-self:center;width:100%;overflow:hidden}
+  .top-actions{grid-column:3;grid-row:1}
+}
+@media(max-width:360px){
+  .topbar{grid-template-columns:32px minmax(0,1fr) auto;padding-left:5px;padding-right:5px}
+  #themeBtn{display:none}
+  .top-actions{gap:3px}
+  .brand{justify-content:flex-start;padding-left:4px}
+  .brand-copy strong{font-size:14px}
+}

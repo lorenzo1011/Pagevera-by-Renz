@@ -9,6 +9,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 document.querySelector('#app').innerHTML = `
   <div class="shell">
     <header class="topbar">
+      <button class="mobile-menu top-mobile-menu" id="mobileMenu" aria-label="Open document navigation">☰</button>
       <div class="brand"><img class="brand-mark" src="/pagevera-mark.svg" alt="Pagevera" /><span class="brand-copy"><strong>Pagevera</strong><small>by Renz Acero</small></span></div>
       <div class="top-actions">
         <button class="icon-btn" id="openBtn" title="Open PDF"><span>＋</span> Open PDF</button>
@@ -27,7 +28,7 @@ document.querySelector('#app').innerHTML = `
       </aside>
 
       <section class="viewer-area">
-        <div class="viewer-topline"><button class="mobile-menu" id="mobileMenu">☰</button><span id="statusText">Ready when you are</span><span class="format-pill">PDF</span></div>
+        <div class="viewer-topline"><span id="statusText">Ready when you are</span><span class="format-pill">PDF</span></div>
         <div class="book-stage" id="bookStage">
           <div class="stage-backdrop" id="stageBackdrop"></div>
           <div class="empty-state" id="emptyState"><div class="empty-icon">▤</div><h1>Turn any PDF into a book.</h1><p>Upload a document to start reading in a beautiful, tactile flipbook.</p><button class="primary" id="emptyOpen">Choose a PDF <span>→</span></button></div>
@@ -43,6 +44,7 @@ document.querySelector('#app').innerHTML = `
         </div>
       </section>
     </main>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
     <div class="settings-overlay" id="settingsOverlay"></div>
     <aside class="settings-panel" id="settingsPanel">
@@ -59,7 +61,7 @@ document.querySelector('#app').innerHTML = `
 `;
 
 const $ = (selector) => document.querySelector(selector);
-const els = { fileInput: $('#fileInput'), flipbook: $('#flipbook'), emptyState: $('#emptyState'), loading: $('#loading'), loadingText: $('#loadingText'), docName: $('#docName'), statusText: $('#statusText'), controls: $('#controls'), thumbnails: $('#thumbnails'), thumbCount: $('#thumbCount'), totalPages: $('#totalPages'), pageInput: $('#pageInput'), searchInput: $('#searchInput'), searchCount: $('#searchCount'), zoomLabel: $('#zoomLabel'), bookStage: $('#bookStage'), stageBackdrop: $('#stageBackdrop'), sidebar: $('#sidebar'), toast: $('#toast'), settingsPanel: $('#settingsPanel'), settingsOverlay: $('#settingsOverlay') };
+const els = { fileInput: $('#fileInput'), flipbook: $('#flipbook'), emptyState: $('#emptyState'), loading: $('#loading'), loadingText: $('#loadingText'), docName: $('#docName'), statusText: $('#statusText'), controls: $('#controls'), thumbnails: $('#thumbnails'), thumbCount: $('#thumbCount'), totalPages: $('#totalPages'), pageInput: $('#pageInput'), searchInput: $('#searchInput'), searchCount: $('#searchCount'), zoomLabel: $('#zoomLabel'), bookStage: $('#bookStage'), stageBackdrop: $('#stageBackdrop'), sidebar: $('#sidebar'), toast: $('#toast'), settingsPanel: $('#settingsPanel'), settingsOverlay: $('#settingsOverlay'), sidebarBackdrop: $('#sidebarBackdrop') };
 els.searchWrap = document.querySelector('.search-wrap');
 els.searchWrap.insertAdjacentHTML('afterend', '<div class="search-results" id="searchResults"></div>');
 els.searchResults = $('#searchResults');
@@ -143,7 +145,9 @@ $('#zoomIn').onclick = () => { zoom = Math.min(1.35, +(zoom + 0.1).toFixed(2)); 
 els.viewerArea = document.querySelector('.viewer-area'); $('#fullscreenBtn').onclick = () => document.fullscreenElement ? document.exitFullscreen() : els.viewerArea.requestFullscreen();
 $('#downloadBtn').onclick = () => { if (!pdfUrl) return showToast('Open a PDF first.'); const a = document.createElement('a'); a.href = pdfUrl; a.download = els.docName.textContent + '.pdf'; a.click(); };
 $('#printBtn').onclick = () => { if (!pdfUrl) return showToast('Open a PDF first.'); const w = window.open(pdfUrl, '_blank'); w?.addEventListener('load', () => w.print()); };
-$('#themeBtn').onclick = () => document.body.classList.toggle('light'); $('#mobileMenu').onclick = () => els.sidebar.classList.toggle('open'); $('#closeSidebar').onclick = () => els.sidebar.classList.remove('open');
+$('#themeBtn').onclick = () => document.body.classList.toggle('light');
+function setSidebarOpen(open) { els.sidebar.classList.toggle('open', open); els.sidebarBackdrop?.classList.toggle('open', open); }
+$('#mobileMenu').onclick = () => setSidebarOpen(!els.sidebar.classList.contains('open')); $('#closeSidebar').onclick = () => setSidebarOpen(false); els.sidebarBackdrop?.addEventListener('click', () => setSidebarOpen(false));
 $('#settingsBtn').onclick = openSettings; $('#closeSettings').onclick = closeSettings; els.settingsOverlay.onclick = closeSettings; $('#bookmarkBtn').onclick = toggleBookmark; $('#noteBtn').onclick = addNote; $('#highlightBtn').onclick = toggleHighlight; document.querySelectorAll('.side-tab').forEach(tab => tab.onclick = () => setReaderView(tab.dataset.view));
 els.searchInput.oninput = event => { const term = event.target.value.trim().toLowerCase(); document.querySelectorAll('.thumbnail').forEach((thumb, i) => thumb.classList.toggle('match', term && pageData[i].text.toLowerCase().includes(term))); const matches = pageData.filter(p => term && p.text.toLowerCase().includes(term)).length; els.searchCount.textContent = term ? `${matches} page${matches === 1 ? '' : 's'}` : ''; renderSearchResults(term); };
 
