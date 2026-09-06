@@ -169,3 +169,11 @@ body.light{background:#eeeae1;color:#28251f}.light .shell{background:radial-grad
   .brand{justify-content:flex-start;padding-left:4px}
   .brand-copy strong{font-size:14px}
 }
+
+/* PageFlip direct surface: neutralize both app and library wrapper boxes. */
+.book-stage,.flipbook,.stf__parent,.sft__wrapper,.stf__block{background:transparent!important;border:0!important;box-shadow:none!important}
+.book-stage{overflow:visible!important;isolation:auto}
+.book-stage .stage-backdrop{pointer-events:none;background-color:transparent}
+.flipbook{overflow:visible!important;outline:0!important}
+.viewer-area{overflow:hidden}
+@media(max-width:767px){.viewer-area{overflow:hidden}.book-stage{overflow:visible!important}.flipbook{max-width:100vw!important}}
