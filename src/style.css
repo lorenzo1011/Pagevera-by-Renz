@@ -59,3 +59,9 @@ body.light{background:#eeeae1;color:#28251f}.light .shell{background:radial-grad
   .book-stage{padding-top:4px;padding-bottom:5px}
 }
 .viewer-area:fullscreen .controls{min-height:58px}
+
+/* Direct page surface: remove the intermediate dark stage box and let PageFlip size itself. */
+.book-stage{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}
+.book-stage .stage-backdrop{border:0;box-shadow:none}
+.flipbook{max-width:none!important;max-height:none!important;margin:0!important;box-shadow:none}
+@media(max-width:767px){.book-stage{padding:0!important}.book-stage.single-page-mode .flipbook{max-width:100vw!important}}

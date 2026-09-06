@@ -241,3 +241,7 @@ Click the fullscreen button below the book to enter the immersive reader mode. P
 ## Responsive layout behavior
 
 Pagevera recalculates its book frame with a `ResizeObserver`, window resize listener, orientation-change listener, and fullscreen-change listener. Fullscreen mode uses the maximum available reader viewport while preserving the PDF page aspect ratio. Desktop and wide tablet layouts use a two-page spread. Narrow portrait devices automatically switch to a compact single-page layout so pages remain readable. The bottom toolbar uses touch-friendly targets, safe-area padding, and responsive wrapping so it does not cover the book on mobile screens.
+
+## Direct page surface and mobile single-page mode
+
+The book stage is transparent and has no intermediate border, shadow, fixed max-size, or extra inner padding around the white PDF pages. PageFlip dimensions are recalculated from the available viewport by the `ResizeObserver`, resize listener, fullscreen listener, and orientation listener. Viewports below 768px automatically use a single-page view; wider screens use a two-page spread when the available aspect ratio allows it.

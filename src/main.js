@@ -102,7 +102,7 @@ function getBookFrame() {
   const availableHeight = Math.max(300, rect.height - inset);
   const maxHeight = fullscreen ? 980 : 680;
   const maxPageWidth = fullscreen ? 700 : 520;
-  const compact = availableWidth < 760 || availableWidth < availableHeight * 1.08;
+  const compact = window.innerWidth < 768 || rect.width < 768 || availableWidth < availableHeight * 1.08;
   const height = Math.min(maxHeight, availableHeight);
   const aspectWidth = height * (480 / 680);
   const pageWidth = Math.min(maxPageWidth, compact ? availableWidth : (availableWidth / 2) * 0.98, aspectWidth);
