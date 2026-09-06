@@ -237,3 +237,7 @@ Developer: Renz Acero
 ## Fullscreen mode
 
 Click the fullscreen button below the book to enter the immersive reader mode. Pagevera requests fullscreen for the complete reader area, recalculates the page frame, and increases the maximum book size so the two-page spread uses the available screen more effectively. Exit fullscreen with the same button or the browser Escape key.
+
+## Responsive layout behavior
+
+Pagevera recalculates its book frame with a `ResizeObserver`, window resize listener, orientation-change listener, and fullscreen-change listener. Fullscreen mode uses the maximum available reader viewport while preserving the PDF page aspect ratio. Desktop and wide tablet layouts use a two-page spread. Narrow portrait devices automatically switch to a compact single-page layout so pages remain readable. The bottom toolbar uses touch-friendly targets, safe-area padding, and responsive wrapping so it does not cover the book on mobile screens.

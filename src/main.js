@@ -68,6 +68,7 @@ els.outlineTitle.innerHTML = '<button class="side-tab active" data-view="pages">
 els.library = document.createElement('div'); els.library.className = 'library-content'; els.library.hidden = true; els.thumbnails.after(els.library);
 els.controls.insertAdjacentHTML('afterbegin', '<div class="control-group reader-tools"><button class="control-btn" id="bookmarkBtn" title="Bookmark this page">☆</button><button class="control-btn" id="noteBtn" title="Add note to this page">✎</button><button class="control-btn" id="highlightBtn" title="Highlight this page">▤</button></div>');
 let pdf = null, pdfUrl = null, book = null, pageData = [], zoom = 1, toastTimer, flipSoundUrl = null, musicUrl = null, currentView = 'pages', currentPage = 0, bookmarks = [], notes = [], highlights = new Set();
+let frameObserver = null, resizeFramePending = false, currentOrientation = null;
 const music = new Audio(); music.loop = true; music.preload = 'auto';
 
 function showToast(message) { els.toast.textContent = message; els.toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => els.toast.classList.remove('show'), 2600); }
@@ -96,20 +97,42 @@ function applyZoom() { els.zoomLabel.textContent = `${Math.round(zoom * 100)}%`;
 function getBookFrame() {
   const rect = els.bookStage.getBoundingClientRect();
   const fullscreen = document.fullscreenElement === els.viewerArea;
-  const inset = fullscreen ? 56 : 24;
-  const availableWidth = Math.max(280, rect.width - inset);
-  const availableHeight = Math.max(360, rect.height - inset);
-  const maxHeight = fullscreen ? 920 : 680;
-  const maxPageWidth = fullscreen ? 650 : 480;
+  const inset = fullscreen ? 42 : 24;
+  const availableWidth = Math.max(220, rect.width - inset);
+  const availableHeight = Math.max(300, rect.height - inset);
+  const maxHeight = fullscreen ? 980 : 680;
+  const maxPageWidth = fullscreen ? 700 : 520;
+  const compact = availableWidth < 760 || availableWidth < availableHeight * 1.08;
   const height = Math.min(maxHeight, availableHeight);
-  const pageWidth = Math.min(maxPageWidth, Math.max(220, (availableWidth / 2) * 0.98), height * (480 / 680));
-  return { pageWidth, height, bookWidth: pageWidth * 2 };
+  const aspectWidth = height * (480 / 680);
+  const pageWidth = Math.min(maxPageWidth, compact ? availableWidth : (availableWidth / 2) * 0.98, aspectWidth);
+  return { pageWidth: Math.max(180, pageWidth), height, bookWidth: compact ? pageWidth : pageWidth * 2, compact };
+}
+function getBookOrientation() { return getBookFrame().compact ? 'portrait' : 'landscape'; }
+function resizeBookFrame() {
+  if (!book || resizeFramePending) return;
+  resizeFramePending = true;
+  requestAnimationFrame(() => {
+    resizeFramePending = false;
+    const frame = getBookFrame();
+    els.flipbook.style.width = `${frame.bookWidth}px`;
+    els.flipbook.style.height = `${frame.height}px`;
+    const orientation = getBookOrientation();
+    if (orientation !== currentOrientation) { currentOrientation = orientation; book.updateOrientation(orientation); }
+    else book.update();
+    els.bookStage.classList.toggle('single-page-mode', frame.compact);
+  });
+}
+function observeBookStage() {
+  frameObserver?.disconnect();
+  frameObserver = new ResizeObserver(resizeBookFrame);
+  frameObserver.observe(els.bookStage);
 }
 
 function playFallbackFlip() { try { const AudioContext = window.AudioContext || window.webkitAudioContext; if (!AudioContext) return; const ctx = new AudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'sine'; osc.frequency.setValueAtTime(170, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(82, ctx.currentTime + 0.075); gain.gain.setValueAtTime(0.0001, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.09 * Number($('#flipVolume').value), ctx.currentTime + 0.008); gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.09); osc.connect(gain).connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.1); } catch { /* audio is optional */ } }
 function playFlipSound() { if (!$('#flipSoundToggle').checked) return; if (flipSoundUrl) { const audio = new Audio(flipSoundUrl); audio.volume = Number($('#flipVolume').value); audio.play().catch(() => {}); } else playFallbackFlip(); }
 
-async function openPdf(source, name = 'Untitled document') { setLoading(true); resetBook(); els.emptyState.classList.add('hidden'); els.controls.classList.add('visible'); els.docName.textContent = name.length > 24 ? `${name.slice(0, 22)}…` : name; els.statusText.textContent = 'Rendering pages…'; try { pdf = await pdfjsLib.getDocument(source).promise; els.totalPages.textContent = pdf.numPages; document.querySelector('#thumbCountTab').textContent = pdf.numPages; els.pageInput.max = pdf.numPages; for (let i = 1; i <= pdf.numPages; i++) { els.loadingText.textContent = `Rendering page ${i} of ${pdf.numPages}…`; pageData.push(await renderPage(i)); } pageData.forEach(({ canvas }) => { const page = document.createElement('div'); page.className = 'page'; page.appendChild(canvas); els.flipbook.appendChild(page); }); const frame = getBookFrame(); els.flipbook.style.width = `${frame.bookWidth}px`; els.flipbook.style.height = `${frame.height}px`; book = new PageFlip(els.flipbook, { width: frame.pageWidth, height: frame.height, size: 'fixed', autoSize: false, showCover: true, drawShadow: true, maxShadowOpacity: 0.42, flippingTime: 720, usePortrait: window.matchMedia('(max-width: 800px)').matches, mobileScrollSupport: false }); book.loadFromHTML(els.flipbook.querySelectorAll('.page')); book.on('flip', event => { updatePage(event.data); playFlipSound(); }); buildThumbnails(); loadReaderData(); updatePage(0); refreshPageAnnotations(); applyZoom(); els.statusText.textContent = 'Reading mode'; showToast(`${pdf.numPages} pages ready`); } catch (error) { console.error(error); els.emptyState.classList.remove('hidden'); els.controls.classList.remove('visible'); showToast('Could not open that PDF.'); } finally { setLoading(false); } }
+async function openPdf(source, name = 'Untitled document') { setLoading(true); resetBook(); els.emptyState.classList.add('hidden'); els.controls.classList.add('visible'); els.docName.textContent = name.length > 24 ? `${name.slice(0, 22)}…` : name; els.statusText.textContent = 'Rendering pages…'; try { pdf = await pdfjsLib.getDocument(source).promise; els.totalPages.textContent = pdf.numPages; document.querySelector('#thumbCountTab').textContent = pdf.numPages; els.pageInput.max = pdf.numPages; for (let i = 1; i <= pdf.numPages; i++) { els.loadingText.textContent = `Rendering page ${i} of ${pdf.numPages}…`; pageData.push(await renderPage(i)); } pageData.forEach(({ canvas }) => { const page = document.createElement('div'); page.className = 'page'; page.appendChild(canvas); els.flipbook.appendChild(page); }); const frame = getBookFrame(); els.flipbook.style.width = `${frame.bookWidth}px`; els.flipbook.style.height = `${frame.height}px`; book = new PageFlip(els.flipbook, { width: frame.pageWidth, height: frame.height, size: 'fixed', autoSize: false, showCover: true, drawShadow: true, maxShadowOpacity: 0.42, flippingTime: 720, usePortrait: true, mobileScrollSupport: false }); currentOrientation = getBookOrientation(); observeBookStage(); book.loadFromHTML(els.flipbook.querySelectorAll('.page')); book.on('flip', event => { updatePage(event.data); playFlipSound(); }); buildThumbnails(); loadReaderData(); updatePage(0); refreshPageAnnotations(); applyZoom(); els.statusText.textContent = 'Reading mode'; showToast(`${pdf.numPages} pages ready`); } catch (error) { console.error(error); els.emptyState.classList.remove('hidden'); els.controls.classList.remove('visible'); showToast('Could not open that PDF.'); } finally { setLoading(false); } }
 
 function chooseFile() { els.fileInput.click(); }
 $('#openBtn').onclick = chooseFile; $('#emptyOpen').onclick = chooseFile;
@@ -135,4 +158,4 @@ $('#overlayRange').oninput = () => { const value = Number($('#overlayRange').val
 $('#resetBackground').onclick = () => { revokeUrl(els.stageBackdrop.dataset.url); els.stageBackdrop.dataset.url = ''; els.stageBackdrop.style.backgroundImage = ''; els.bookStage.classList.remove('has-background'); $('#backgroundName').textContent = 'Upload a background image'; showToast('Default gradient restored'); };
 
 document.addEventListener('keydown', event => { if (event.key === 'Escape') closeSettings(); if (event.target.matches('input')) return; if (event.key === 'ArrowRight') book?.flipNext(); if (event.key === 'ArrowLeft') book?.flipPrev(); if (event.key === 'f') $('#fullscreenBtn').click(); });
-function resizeBookFrame() { if (!book) return; const frame = getBookFrame(); els.flipbook.style.width = `${frame.bookWidth}px`; els.flipbook.style.height = `${frame.height}px`; book.update(); } window.addEventListener('resize', resizeBookFrame); document.addEventListener('fullscreenchange', () => requestAnimationFrame(resizeBookFrame));
+window.addEventListener('resize', resizeBookFrame, { passive: true }); window.addEventListener('orientationchange', () => setTimeout(resizeBookFrame, 120), { passive: true }); document.addEventListener('fullscreenchange', () => setTimeout(resizeBookFrame, 80));
