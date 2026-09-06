@@ -245,3 +245,7 @@ Pagevera recalculates its book frame with a `ResizeObserver`, window resize list
 ## Direct page surface and mobile single-page mode
 
 The book stage is transparent and has no intermediate border, shadow, fixed max-size, or extra inner padding around the white PDF pages. PageFlip dimensions are recalculated from the available viewport by the `ResizeObserver`, resize listener, fullscreen listener, and orientation listener. Viewports below 768px automatically use a single-page view; wider screens use a two-page spread when the available aspect ratio allows it.
+
+## Full app-shell responsiveness
+
+Responsive behavior applies to the complete application, not only the flipbook. The header actions, document sidebar, mobile menu drawer, viewer status row, bottom toolbar, settings panel, search results, thumbnails, bookmarks, and notes adapt across desktop, tablet, mobile portrait, and mobile landscape widths. Tablet and phone layouts collapse the document sidebar into a drawer, make settings full-width on small screens, reduce header spacing, and preserve safe-area space for touch controls.
