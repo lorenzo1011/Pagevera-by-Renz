@@ -249,3 +249,7 @@ The book stage is transparent and has no intermediate border, shadow, fixed max-
 ## Full app-shell responsiveness
 
 Responsive behavior applies to the complete application, not only the flipbook. The header actions, document sidebar, mobile menu drawer, viewer status row, bottom toolbar, settings panel, search results, thumbnails, bookmarks, and notes adapt across desktop, tablet, mobile portrait, and mobile landscape widths. Tablet and phone layouts collapse the document sidebar into a drawer, make settings full-width on small screens, reduce header spacing, and preserve safe-area space for touch controls.
+
+## Zoom and preview background behavior
+
+Zoom is stored as a bounded reader state between 70% and 135% and is applied without changing the PDF page collection. Moving between pages preserves the selected zoom. Pressing Escape or leaving fullscreen resets the reader to 100% and recalculates the frame. The uploaded preview background is rendered as a visible backdrop layer behind the transparent PageFlip surface, with the overlay control remaining available for readability.

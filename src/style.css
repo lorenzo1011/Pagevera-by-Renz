@@ -177,3 +177,11 @@ body.light{background:#eeeae1;color:#28251f}.light .shell{background:radial-grad
 .flipbook{overflow:visible!important;outline:0!important}
 .viewer-area{overflow:hidden}
 @media(max-width:767px){.viewer-area{overflow:hidden}.book-stage{overflow:visible!important}.flipbook{max-width:100vw!important}}
+
+/* Stable zoom and visible custom preview background. */
+.book-stage{position:relative;isolation:isolate;overflow:visible!important}
+.stage-backdrop{z-index:0!important;opacity:1!important;pointer-events:none}
+.stage-backdrop::after{z-index:1}
+.flipbook{z-index:2;transform-origin:center center;will-change:transform}
+.flipbook.is-zoomed{position:relative}
+.empty-state,.loading{z-index:3}
